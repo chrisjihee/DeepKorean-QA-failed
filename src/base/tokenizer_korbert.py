@@ -1,5 +1,8 @@
 import collections
+import contextlib
+import json
 import os
+from urllib.request import urlopen
 
 from transformers import AutoTokenizer
 from transformers.models.bert.tokenization_bert import BasicTokenizer, BertTokenizer, WordpieceTokenizer, load_vocab, whitespace_tokenize
@@ -22,6 +25,8 @@ class KorbertTokenizer(BertTokenizer):
             pad_token="[PAD]",
             cls_token="[CLS]",
             mask_token="[MASK]",
+            analyzer_netloc=None,
+            tokenize_online=False,
             tokenize_chinese_chars=True,
             strip_accents=None,
             **kwargs
@@ -48,25 +53,52 @@ class KorbertTokenizer(BertTokenizer):
         self.ids_to_tokens = collections.OrderedDict([(ids, tok) for tok, ids in self.vocab.items()])
         self.do_basic_tokenize = do_basic_tokenize
         if do_basic_tokenize:
-            self.space_tokenizer = SpaceTokenizer(
-                do_lower_case=do_lower_case,
-                never_split=never_split,
-                tokenize_chinese_chars=tokenize_chinese_chars,
-                strip_accents=strip_accents,
-            )
+            if tokenize_online and analyzer_netloc:
+                self.online_tokenizer = OnlineTokenizer(
+                    netloc=analyzer_netloc,
+                    do_lower_case=do_lower_case,
+                    never_split=never_split,
+                    tokenize_chinese_chars=tokenize_chinese_chars,
+                    strip_accents=strip_accents,
+                )
+            else:
+                self.offline_tokenizer = OfflineTokenizer(
+                    do_lower_case=do_lower_case,
+                    never_split=never_split,
+                    tokenize_chinese_chars=tokenize_chinese_chars,
+                    strip_accents=strip_accents,
+                )
         self.wordpiece_tokenizer = KorbertWordpieceTokenizer(vocab=self.vocab, unk_token=self.unk_token)
 
     def tokenize(self, morps: TextInput, **kwargs):
         sub_tokens = []
-        for token in self.space_tokenizer.tokenize(morps):
+        for token in self.offline_tokenizer.tokenize(morps):
             if token not in self.all_special_tokens:
                 token += '_'
             for sub_token in self.wordpiece_tokenizer.tokenize(token):
                 sub_tokens.append(sub_token)
         return sub_tokens
 
+    def tokenize_with_offset(self, text: TextInput, **kwargs):
+        split_tokens = []
+        split_offsets = []
+        tokens, offsets = self.online_tokenizer.tokenize_with_offset(text)
+        for token, offset in zip(tokens, offsets):
+            start, end = offset
+            token += '_'
+            for sub_token in self.wordpiece_tokenizer.tokenize(token):
+                if token == sub_token:
+                    split_offsets.append(offset)
+                else:
+                    sub_end = min(start + len(sub_token), end)
+                    split_offsets.append((start, sub_end))
+                    start = sub_end
+                split_tokens.append(sub_token)
+        # print(f"(tokens, offsets)={list(zip(split_tokens, split_offsets))}")
+        return split_tokens, split_offsets
 
-class SpaceTokenizer(BasicTokenizer):
+
+class OfflineTokenizer(BasicTokenizer):
     """
     Constructs a BasicTokenizer that will run space splitting.
     """
@@ -101,6 +133,108 @@ class SpaceTokenizer(BasicTokenizer):
                 output[-1].append(char)
             i += 1
         return ["".join(x) for x in output]
+
+
+class OnlineTokenizer(BasicTokenizer):
+    """
+    Constructs a BasicTokenizer that will run online pos tagging..
+    """
+
+    def __init__(self, netloc: str, do_lower_case=True, never_split=None, tokenize_chinese_chars=True, strip_accents=None):
+        super().__init__(
+            do_lower_case=do_lower_case,
+            never_split=never_split,
+            tokenize_chinese_chars=tokenize_chinese_chars,
+            strip_accents=strip_accents,
+        )
+        self.tagger = MLTagger(netloc=netloc)
+
+    def tokenize(self, text, never_split=None):
+        morps = self.tagger.tag(text=text)
+        return super().tokenize(' '.join(morps), never_split=never_split)
+
+    def tokenize_with_offset(self, text, never_split=None):
+        morps, offsets = self.tagger.tag_with_offset(text=text)
+        return super().tokenize(' '.join(morps), never_split=never_split), offsets
+
+    def _run_split_on_punc(self, text, never_split=None):
+        """Splits punctuation on a piece of text."""
+        if never_split is not None and text in never_split:
+            return [text]
+        chars = list(text)
+        i = 0
+        start_new_word = True
+        output = []
+        while i < len(chars):
+            char = chars[i]
+            if char == ' ':
+                output.append([char])
+                start_new_word = True
+            else:
+                if start_new_word:
+                    output.append([])
+                start_new_word = False
+                output[-1].append(char)
+            i += 1
+
+        return ["".join(x) for x in output]
+
+
+class MLTagger:  # jihee.ryu @ 2021-09-22
+    def __init__(self, netloc: str):
+        self.netloc = netloc
+        self.api = f"http://{self.netloc}/interface/lm_interface"
+
+    def do_lang(self, text: str):
+        param = {"argument": {"analyzer_types": ["MORPH"], "text": text}}
+        try:
+            with contextlib.closing(urlopen(self.api, json.dumps(param).encode())) as res:
+                return json.loads(res.read().decode())['return_object']['json']
+        except:
+            print("\n" + "=" * 120)
+            print(f'[error] Can not connect to WiseAPI[{self.api}]')
+            print("=" * 120 + "\n")
+            exit(1)
+
+    def tag(self, text: str):
+        ndoc = self.do_lang(text)
+        morps = [f"{m['lemma']}/{m['type']}" for s in ndoc['sentence'] for m in s['morp']]
+        return morps
+
+    def tag_with_offset(self, text: str):
+        ndoc = self.do_lang(text)
+        morps = [f"{m['lemma']}/{m['type']}" for s in ndoc['sentence'] for m in s['morp']]
+        byte_starts = [int(m['position']) for s in ndoc['sentence'] for m in s['morp']]
+        text_bytes = text.encode()
+        try:
+            char_starts = [len(text_bytes[0:x].decode()) for x in byte_starts]
+        except:
+            print("\n" + "=" * 120)
+            print(f'[error] Can NOT decode to specific byte')
+            print("=" * 120 + "\n")
+            with open("ndoc.json", 'w') as out:
+                json.dump(ndoc, out, ensure_ascii=False, indent="  ")
+            print(f'text={text}')
+            print(f'morps={morps}')
+            print(f'byte_starts={byte_starts}')
+            for x in byte_starts:
+                print(f'text_bytes[0:{x}]={text_bytes[0:x].decode()}')
+            exit(1)
+
+        char_starts.append(len(text))
+        offsets = list()
+        for i, morp in enumerate(morps):
+            char_start = char_starts[i]
+            char_end = char_starts[i + 1]
+            if text[char_end - 1].isspace():
+                char_end = char_end - 1
+            if char_end < char_start:
+                char_end = char_start
+            offset = (char_start, char_end)
+            offsets.append(offset)
+        # print(f"text={text}")
+        # print(f"(morps, offsets)={list(zip(morps, offsets))}")
+        return morps, offsets
 
 
 class KorbertWordpieceTokenizer(WordpieceTokenizer):
@@ -153,24 +287,24 @@ if __name__ == "__main__":
     print(f"morps={morps}")
 
     tokenizer1A = AutoTokenizer.from_pretrained(
-        "model/KoELECTRA-Base-v3",
+        "pretrained/KoELECTRA-Base-v3",
         max_len=512,
         use_fast=True,
     )
     tokenizer1B = BertTokenizer(
-        vocab_file="model/KoELECTRA-Base-v3/vocab.txt",
+        vocab_file="pretrained/KoELECTRA-Base-v3/vocab.txt",
         do_lower_case=False,
         tokenize_chinese_chars=False,
     )
     tokenizer2A = KorbertTokenizer.from_pretrained(
-        "model/ROBERTA-morp20.08",
+        "pretrained/KorBERT-Base-morp",
         max_len=512,
         use_fast=False,
         do_lower_case=False,
         tokenize_chinese_chars=False,
     )
     tokenizer2B = KorbertTokenizer(
-        vocab_file="model/ELECTRA-morp20.05/vocab.txt",
+        vocab_file="pretrained/KorBERT-Base-morp/vocab.txt",
         do_lower_case=False,
         tokenize_chinese_chars=False,
     )
@@ -179,3 +313,28 @@ if __name__ == "__main__":
     print(f"tokens from plain={tokenizer1B.tokenize(plain)}")
     print(f"tokens from morps={tokenizer2A.tokenize(morps)}")
     print(f"tokens from morps={tokenizer2B.tokenize(morps)}")
+
+    tt = "[CLS] 한국어 사전학습 모델을 공유합니다. [SEP] 지금까지 금해졌다."
+    print(f"text={tt}")
+
+    tagger = MLTagger(netloc="129.254.164.137:19001")
+    ms = tagger.tag(tt)
+    print(f"morps={ms}")
+    print(f"morps={' '.join(ms)}")
+
+    tokenizer = KorbertTokenizer(
+        vocab_file="pretrained/KorBERT-Base-morp/vocab.txt",
+        analyzer_netloc="129.254.164.137:19001",
+        tokenize_online=True,
+        tokenize_chinese_chars=False,
+        do_lower_case=False,
+        never_split=None,
+        strip_accents=None,
+    )
+    ts, os = tokenizer.tokenize_with_offset(tt)
+    print(f"ts={ts}")
+    print(f"os={os}")
+
+    print('\t'.join(["token", "offset", "substr"]))
+    for a, b in zip(ts, os):
+        print('\t'.join([a, str(b), tt[b[0]:b[1]]]))

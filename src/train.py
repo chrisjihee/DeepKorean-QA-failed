@@ -26,6 +26,7 @@ from base.tensor import to_tensor_batch
 from base.time import now, MyTimer
 from base.tokenizer_korbert import KorbertTokenizer
 from base.util import append_intersection
+from korquad import korquad
 from pytorch_lightning import seed_everything
 from pytorch_lightning.lite import LightningLite
 from pytorch_lightning.strategies import DeepSpeedStrategy
@@ -138,7 +139,7 @@ class MyTrainer(LightningLite):
 
             # READY(data)
             self.load_tokenizer(logging=self.is_global_zero)
-            self.encode_dataset(logging=self.is_global_zero, keep_input=False)
+            self.encode_dataset(logging=self.is_global_zero, trimming="trim_whitespace" in self.state and self.state.trim_whitespace, keep_input=False)
             self.state.steps_per_epoch = len(self.dataloader['train'])
             self.state.total_steps = self.state.num_train_epochs * self.state.steps_per_epoch
             epoch_per_step = 1.0 / self.state.steps_per_epoch
@@ -162,13 +163,16 @@ class MyTrainer(LightningLite):
                 self.optimizer, self.scheduler = self.configure_optimizers()
                 self.loss_metric = nn.MSELoss() if self.state.loss_metric == "MSELoss" else nn.CrossEntropyLoss() if self.state.loss_metric == "CrossEntropyLoss" else None
                 assert self.loss_metric is not None, f"Undefined loss_metric: {self.state.loss_metric}"
-                self.score_metric = load_metric(self.state.score_metric.major, self.state.score_metric.minor)
+                if self.state.score_metric.major == "korquad":
+                    self.score_metric = korquad.Korquad()
+                else:
+                    self.score_metric = load_metric(self.state.score_metric.major, self.state.score_metric.minor if 'minor' in self.state.score_metric else None)
             if self.is_global_zero:
                 self.state['model'] = f"{type(self.model).__qualname__}(pretrained={Path(self.state.pretrained).name})"
                 self.state['optimizer'] = f"{type(self.optimizer).__qualname__}(lr={self.state.learning_rate})"
                 self.state['scheduler'] = f"{type(self.scheduler).__qualname__}(step_size={self.state.scheduling_epochs}, gamma={self.state.scheduling_gamma})"
                 self.state['loss_metric'] = f"{type(self.loss_metric).__qualname__}()"
-                self.state['score_metric'] = f"load_metric({self.state.score_metric.major}, {self.state.score_metric.minor})"
+                self.state['score_metric'] = f"load_metric({self.state.score_metric.major}{f', {self.state.score_metric.minor}' if 'minor' in self.state.score_metric else ''})"
                 print(horizontal_line(c="-"))
                 for k in ('model', 'optimizer', 'scheduler', 'loss_metric', 'score_metric'):
                     print(f"- {k:25s} = {self.state[k]}")
@@ -323,8 +327,11 @@ class MyTrainer(LightningLite):
         if logging:
             print(horizontal_line(c="-"))
         if "-morp" in self.state.pretrained:
-            self.tokenizer = KorbertTokenizer.from_pretrained(self.state.pretrained, max_len=self.state.max_sequence_length,
-                                                              use_fast=False, do_lower_case=False, tokenize_chinese_chars=False)
+            self.tokenizer = KorbertTokenizer.from_pretrained(self.state.pretrained,
+                                                              max_len=self.state.max_sequence_length,
+                                                              tokenize_online="tokenize_online" in self.state and self.state.tokenize_online,
+                                                              analyzer_netloc="analyzer_netloc" in self.state and self.state.analyzer_netloc,
+                                                              tokenize_chinese_chars=False, use_fast=False, do_lower_case=False)
         else:
             self.tokenizer = AutoTokenizer.from_pretrained(self.state.pretrained, max_len=self.state.max_sequence_length)
         if logging:
@@ -349,7 +356,7 @@ class MyTrainer(LightningLite):
             print(f"- {'tokenized.sample.tks':25s} =", ' '.join(tks), file=file)
             print(f"- {'tokenized.sample.ids':25s} =", ' '.join(map(str, ids)), file=file)
 
-    def encode_dataset(self, logging=True, keep_input=False, default_label_cols=('label', 'labels')):
+    def encode_dataset(self, logging=True, trimming=False, keep_input=False, default_label_cols=('label', 'labels')):
         # load raw datasets
         with RedirStd(stdout=None, stderr=None):
             self.raw_datasets = load_dataset("json", data_files={k: v for k, v in self.state.data_files.items() if v}, field="data")
@@ -368,7 +375,7 @@ class MyTrainer(LightningLite):
             all_label_cols = set(default_label_cols).union({label_major})
             first_split = list(self.raw_datasets.keys())[0]
             remove_columns = [x for x in self.raw_datasets[first_split].column_names if x not in all_label_cols] if not keep_input else None
-            self.raw_datasets = self.raw_datasets.map(self.encode_text, fn_kwargs={'logging': logging}, load_from_cache_file=False, remove_columns=remove_columns)
+            self.raw_datasets = self.raw_datasets.map(self.encode_text, fn_kwargs={'logging': logging, 'trimming': trimming}, load_from_cache_file=False, remove_columns=remove_columns)
 
         # setup dataloaders
         if self.state.train_batch_size <= 0:
@@ -387,10 +394,10 @@ class MyTrainer(LightningLite):
             for k, dataset in self.raw_datasets.items():
                 dataset: Dataset = dataset
                 for f, v in dataset.features.items():
-                    assert isinstance(v, (Sequence, Value, dict)), f"feature({f}) is not {Sequence.__name__}, {Value.__name__} or {dict.__name__}"
+                    assert isinstance(v, (Sequence, Value, dict)), f"feature({f}[{type(v)}]) is not {Sequence.__name__}, {Value.__name__} or {dict.__name__}"
                     if isinstance(v, dict):
                         for f2, v2 in v.items():
-                            assert isinstance(v2, Value), f"feature({f2}) is not {Value.__name__}"
+                            assert isinstance(v2, (Value, Sequence)), f"feature({f2}[{type(v2)}]) is not {Value.__name__} or {Sequence.__name__}"
                 feature_specs = []
                 for f, v in dataset.features.items():
                     if isinstance(v, dict):
@@ -402,13 +409,26 @@ class MyTrainer(LightningLite):
             print(f"- {'input_text_columns':25s} = {self.state.input_text1}, {self.state.input_text2}")
             print(f"- {'label_column':25s} = {self.state.label_column}")
 
-    def encode_text(self, example, logging=True):
+    @staticmethod
+    def trim_whitespace(text: str, spaces=("\n", "\r", "\t", " ", "᠎", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "​", " ", " ", "﻿", "　")):
+        for x in spaces:
+            text = text.replace(x, " ")
+        return text
+
+    def encode_text(self, example, logging=True, trimming=False):
+        if self.state.input_text1 and self.state.input_text1 in example:
+            example[self.state.input_text1 + "_origin"] = example[self.state.input_text1]
+        if self.state.input_text2 and self.state.input_text2 in example:
+            example[self.state.input_text2 + "_origin"] = example[self.state.input_text2]
+        if trimming:
+            if self.state.input_text1 and self.state.input_text1 in example:
+                example[self.state.input_text1] = self.trim_whitespace(example[self.state.input_text1])
+            if self.state.input_text2 and self.state.input_text2 in example:
+                example[self.state.input_text1] = self.trim_whitespace(example[self.state.input_text1])
         if "-morp" in self.state.pretrained:
             if self.state.input_text1 and self.state.input_text1 in example:
-                example[self.state.input_text1 + "_origin"] = example[self.state.input_text1]
                 example[self.state.input_text1] = to_morphemes(example[self.state.input_text1])
             if self.state.input_text2 and self.state.input_text2 in example:
-                example[self.state.input_text2 + "_origin"] = example[self.state.input_text2]
                 example[self.state.input_text2] = to_morphemes(example[self.state.input_text2])
         text_pair = (
             (example[self.state.input_text1],) if self.state.input_text2 is None

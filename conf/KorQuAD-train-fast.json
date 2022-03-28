@@ -10,30 +10,32 @@
   "max_sequence_length": 128,
   "pretrained": "pretrained/KoELECTRA-Base-v3",
   "data_files": {
-    "train": "data/klue-sts/train.json",
-    "valid": "data/klue-sts/validation.json",
+    "train": "data/korquad-new/KorQuAD_v1.0_train.json",
+    "valid": "data/korquad-new/KorQuAD_v1.0_dev.json",
     "test": null
   },
   "num_classes": 2,
-  "label_column": "labels.binary-label",
+  "label_column": "answers.answer_start",
   "score_targets": {
     "train": true,
     "valid": true,
     "test": true
   },
   "output_dir": "output",
-  "input_text1": "sentence1",
-  "input_text2": "sentence2",
+  "input_text1": "question",
+  "input_text2": "context",
+  "trim_whitespace": true,
+  "tokenize_online": true,
+  "analyzer_netloc": "129.254.164.137:19001",
   "loss_metric": "CrossEntropyLoss",
   "score_metric": {
-    "major": "glue",
-    "minor": "mrpc"
+    "major": "korquad"
   },
   "check_tokenizer": true,
   "num_check_samples": 3,
-  "num_train_samples": -1,
-  "num_test_samples": -1,
-  "num_train_epochs": 5,
+  "num_train_samples": 1200,
+  "num_test_samples": 50,
+  "num_train_epochs": 3,
   "scheduling_epochs": 1,
   "scheduling_gamma": 1.0,
   "learning_rate": 2e-5,

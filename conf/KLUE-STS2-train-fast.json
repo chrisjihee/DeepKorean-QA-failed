@@ -14,7 +14,7 @@
     "valid": "data/klue-sts/validation.json",
     "test": null
   },
-  "num_classes": 1,
+  "num_classes": 2,
   "label_column": "labels.binary-label",
   "score_targets": {
     "train": true,
@@ -24,7 +24,7 @@
   "output_dir": "output",
   "input_text1": "sentence1",
   "input_text2": "sentence2",
-  "loss_metric": "MSELoss",
+  "loss_metric": "CrossEntropyLoss",
   "score_metric": {
     "major": "glue",
     "minor": "mrpc"
