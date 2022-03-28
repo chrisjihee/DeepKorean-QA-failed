@@ -2,11 +2,20 @@ import collections
 import contextlib
 import json
 import os
+from typing import List
+from typing import Optional, Union
 from urllib.request import urlopen
 
 from transformers import AutoTokenizer
 from transformers.models.bert.tokenization_bert import BasicTokenizer, BertTokenizer, WordpieceTokenizer, load_vocab, whitespace_tokenize
-from transformers.tokenization_utils_base import TextInput
+from transformers.tokenization_utils_base import (
+    BatchEncoding,
+    EncodedInput,
+    PreTokenizedInput,
+    TextInput,
+    TruncationStrategy,
+)
+from transformers.utils import PaddingStrategy, TensorType
 
 
 class KorbertTokenizer(BertTokenizer):
@@ -79,7 +88,7 @@ class KorbertTokenizer(BertTokenizer):
                 sub_tokens.append(sub_token)
         return sub_tokens
 
-    def tokenize_with_offset(self, text: TextInput, **kwargs):
+    def tokenize_online(self, text: TextInput, **kwargs):
         split_tokens = []
         split_offsets = []
         tokens, offsets = self.online_tokenizer.tokenize_with_offset(text)
@@ -96,6 +105,239 @@ class KorbertTokenizer(BertTokenizer):
                 split_tokens.append(sub_token)
         # print(f"(tokens, offsets)={list(zip(split_tokens, split_offsets))}")
         return split_tokens, split_offsets
+
+    def _encode_plus(
+            self,
+            text: Union[TextInput, PreTokenizedInput, EncodedInput],
+            text_pair: Optional[Union[TextInput, PreTokenizedInput, EncodedInput]] = None,
+            add_special_tokens: bool = True,
+            padding_strategy: PaddingStrategy = PaddingStrategy.DO_NOT_PAD,
+            truncation_strategy: TruncationStrategy = TruncationStrategy.DO_NOT_TRUNCATE,
+            max_length: Optional[int] = None,
+            stride: int = 0,
+            is_split_into_words: bool = False,
+            pad_to_multiple_of: Optional[int] = None,
+            return_tensors: Optional[Union[str, TensorType]] = None,
+            return_token_type_ids: Optional[bool] = None,
+            return_attention_mask: Optional[bool] = None,
+            return_overflowing_tokens: bool = False,
+            return_special_tokens_mask: bool = False,
+            return_offsets_mapping: bool = False,
+            return_length: bool = False,
+            verbose: bool = True,
+            **kwargs
+    ) -> BatchEncoding:
+        ##rev##
+        def get_input_ids_with_extra(text):
+            if isinstance(text, str):
+                tokens, offsets = self.tokenize_online(text, **kwargs)
+                return self.convert_tokens_to_ids(tokens), offsets, None
+            elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], str):
+                if is_split_into_words:
+                    all_tokens, all_offsets, all_word_ids = \
+                        zip(*[(ts, os, [(i,)] * len(ts)) for i, (ts, os) in
+                              enumerate(self.tokenize_online(t, is_split_into_words=True, **kwargs) for t in text)])
+                    all_tokens = sum(all_tokens, [])
+                    all_offsets = sum(all_offsets, [])
+                    all_word_ids = sum(all_word_ids, [])
+                    return self.convert_tokens_to_ids(all_tokens), all_offsets, all_word_ids
+                else:
+                    return self.convert_tokens_to_ids(text), None, None
+            elif isinstance(text, (list, tuple)) and len(text) > 0 and isinstance(text[0], int):
+                return text, None, None
+            else:
+                raise ValueError(
+                    "Input is not valid. Should be a string, a list/tuple of strings or a list/tuple of integers."
+                )
+
+        ##rev##
+        first_ids, first_offsets, first_word_ids = get_input_ids_with_extra(text)
+        second_ids, second_offsets, second_word_ids = get_input_ids_with_extra(text_pair) if text_pair is not None else (None, None, None)
+
+        return self.prepare_for_model(
+            first_ids,
+            pair_ids=second_ids,
+            offsets=first_offsets,  ##rev##
+            pair_offsets=second_offsets,  ##rev##
+            word_ids=first_word_ids,  ##rev##
+            pair_word_ids=second_word_ids,  ##rev##
+            return_offsets_mapping=return_offsets_mapping,  ##rev##
+            add_special_tokens=add_special_tokens,
+            padding=padding_strategy.value,
+            truncation=truncation_strategy.value,
+            max_length=max_length,
+            stride=stride,
+            pad_to_multiple_of=pad_to_multiple_of,
+            return_tensors=return_tensors,
+            prepend_batch_axis=True,
+            return_attention_mask=return_attention_mask,
+            return_token_type_ids=return_token_type_ids,
+            return_overflowing_tokens=return_overflowing_tokens,
+            return_special_tokens_mask=return_special_tokens_mask,
+            return_length=return_length,
+            verbose=verbose,
+            **kwargs,  ##rev##
+        )
+
+    def prepare_for_model(
+            self,
+            ids: List[int],
+            pair_ids: Optional[List[int]] = None,
+            offsets=None,  ##rev##
+            pair_offsets=None,  ##rev##
+            word_ids=None,  ##rev##
+            pair_word_ids=None,  ##rev##
+            add_special_tokens: bool = True,
+            padding: Union[bool, str, PaddingStrategy] = False,
+            truncation: Union[bool, str, TruncationStrategy] = False,
+            max_length: Optional[int] = None,
+            stride: int = 0,
+            pad_to_multiple_of: Optional[int] = None,
+            return_tensors: Optional[Union[str, TensorType]] = None,
+            return_token_type_ids: Optional[bool] = None,
+            return_attention_mask: Optional[bool] = None,
+            return_overflowing_tokens: bool = False,
+            return_special_tokens_mask: bool = False,
+            return_offsets_mapping: bool = False,
+            return_length: bool = False,
+            verbose: bool = True,
+            prepend_batch_axis: bool = False,
+            **kwargs
+    ) -> BatchEncoding:
+        # Backward compatibility for 'truncation_strategy', 'pad_to_max_length'
+        padding_strategy, truncation_strategy, max_length, kwargs = self._get_padding_truncation_strategies(
+            padding=padding,
+            truncation=truncation,
+            max_length=max_length,
+            pad_to_multiple_of=pad_to_multiple_of,
+            verbose=verbose,
+            **kwargs,
+        )
+
+        pair = bool(pair_ids is not None)
+        len_ids = len(ids)
+        len_pair_ids = len(pair_ids) if pair else 0
+
+        if return_token_type_ids and not add_special_tokens:
+            raise ValueError(
+                "Asking to return token_type_ids while setting add_special_tokens to False "
+                "results in an undefined behavior. Please set add_special_tokens to True or "
+                "set return_token_type_ids to None."
+            )
+
+        if (
+                return_overflowing_tokens
+                and truncation_strategy == TruncationStrategy.LONGEST_FIRST
+                and pair_ids is not None
+        ):
+            raise ValueError(
+                "Not possible to return overflowing tokens for pair of sequences with the "
+                "`longest_first`. Please select another truncation strategy than `longest_first`, "
+                "for instance `only_second` or `only_first`."
+            )
+
+        # Load from model defaults
+        if return_token_type_ids is None:
+            return_token_type_ids = "token_type_ids" in self.model_input_names
+        if return_attention_mask is None:
+            return_attention_mask = "attention_mask" in self.model_input_names
+
+        encoded_inputs = {}
+
+        # Compute the total size of the returned encodings
+        total_len = len_ids + len_pair_ids + (self.num_special_tokens_to_add(pair=pair) if add_special_tokens else 0)
+
+        # Truncation: Handle max sequence length
+        overflowing_tokens = []
+        overflowing_offsets = None
+        overflowing_word_ids = None
+        if truncation_strategy != TruncationStrategy.DO_NOT_TRUNCATE and max_length and total_len > max_length:
+            ids, pair_ids, overflowing_tokens = self.truncate_sequences(
+                ids,
+                pair_ids=pair_ids,
+                num_tokens_to_remove=total_len - max_length,
+                truncation_strategy=truncation_strategy,
+                stride=stride,
+            )
+            ##rev##
+            if offsets is not None:
+                offsets, pair_offsets, overflowing_offsets = self.truncate_sequences(
+                    offsets,
+                    pair_ids=pair_offsets,
+                    num_tokens_to_remove=total_len - max_length,
+                    truncation_strategy=truncation_strategy,
+                    stride=stride,
+                )
+            ##rev##
+            if word_ids is not None:
+                word_ids, pair_word_ids, overflowing_word_ids = self.truncate_sequences(
+                    word_ids,
+                    pair_ids=pair_word_ids,
+                    num_tokens_to_remove=total_len - max_length,
+                    truncation_strategy=truncation_strategy,
+                    stride=stride,
+                )
+
+        if return_overflowing_tokens:
+            encoded_inputs["overflowing_tokens"] = overflowing_tokens
+            encoded_inputs["num_truncated_tokens"] = total_len - max_length
+            if offsets and overflowing_offsets:
+                encoded_inputs["overflowing_offsets"] = overflowing_offsets  ##rev##
+            if word_ids and overflowing_word_ids:
+                encoded_inputs["overflowing_word_ids"] = overflowing_word_ids  ##rev##
+
+        # Add special tokens
+        no_offset_tokens = {self.cls_token_id, self.sep_token_id, self.pad_token_id}  ##rev##
+        if add_special_tokens:
+            sequence = self.build_inputs_with_special_tokens(ids, pair_ids)
+            token_type_ids = self.create_token_type_ids_from_sequences(ids, pair_ids)
+            if offsets is not None:  ##rev##
+                offset_mapping = [x if x not in no_offset_tokens else (0, 0) for x in self.build_inputs_with_special_tokens(offsets, pair_offsets)]
+            if word_ids is not None:  ##rev##
+                sequence_word_ids = [x if x not in no_offset_tokens else None for x in self.build_inputs_with_special_tokens(word_ids, pair_word_ids)]
+        else:
+            sequence = ids + pair_ids if pair else ids
+            token_type_ids = [0] * len(ids) + ([0] * len(pair_ids) if pair else [])
+            if offsets is not None:  ##rev##
+                offset_mapping = offsets + pair_offsets if pair else offsets
+            if word_ids is not None:  ##rev##
+                sequence_word_ids = word_ids + pair_word_ids if pair else word_ids
+
+        # Build output dictionary
+        encoded_inputs["input_ids"] = sequence
+        if word_ids is not None:  ##rev##
+            encoded_inputs["word_ids"] = sequence_word_ids
+        if return_offsets_mapping and offsets is not None:  ##rev##
+            encoded_inputs["offset_mapping"] = offset_mapping
+        if return_token_type_ids:
+            encoded_inputs["token_type_ids"] = token_type_ids
+        if return_special_tokens_mask:
+            if add_special_tokens:
+                encoded_inputs["special_tokens_mask"] = self.get_special_tokens_mask(ids, pair_ids)
+            else:
+                encoded_inputs["special_tokens_mask"] = [0] * len(sequence)
+
+        # Check lengths
+        self._eventual_warn_about_too_long_sequence(encoded_inputs["input_ids"], max_length, verbose)
+
+        # Padding
+        if padding_strategy != PaddingStrategy.DO_NOT_PAD or return_attention_mask:
+            encoded_inputs = self.pad(
+                encoded_inputs,
+                max_length=max_length,
+                padding=padding_strategy.value,
+                pad_to_multiple_of=pad_to_multiple_of,
+                return_attention_mask=return_attention_mask,
+            )
+
+        if return_length:
+            encoded_inputs["length"] = len(encoded_inputs["input_ids"])
+
+        batch_outputs = BatchEncoding(
+            encoded_inputs, tensor_type=return_tensors, prepend_batch_axis=prepend_batch_axis
+        )
+
+        return batch_outputs
 
 
 class OfflineTokenizer(BasicTokenizer):
@@ -331,7 +573,7 @@ if __name__ == "__main__":
         never_split=None,
         strip_accents=None,
     )
-    ts, os = tokenizer.tokenize_with_offset(tt)
+    ts, os = tokenizer.tokenize_online(tt)
     print(f"ts={ts}")
     print(f"os={os}")
 

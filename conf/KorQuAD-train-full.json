@@ -1,0 +1,91 @@
+{
+  "seed": 1,
+  "gpus": [
+    3
+  ],
+  "strategy": null,
+  "precision": 32,
+  "test_batch_size": -1,
+  "train_batch_size": -1,
+  "doc_stride": 128,
+  "max_sequence_length": 256,
+  "offsets_mapping": true,
+  "overflowing_tokens": true,
+  "pretrained": "pretrained/KorBERT-Base-morp",
+  "data_files": {
+    "train": "data/korquad-new2/train.json",
+    "valid": "data/korquad-new2/valid.json",
+    "test": null
+  },
+  "finetuning_model": "SpanModel",
+  "num_classes": 2,
+  "label_column": ["start_positions", "end_positions"],
+  "score_targets": {
+    "train": true,
+    "valid": true,
+    "test": true
+  },
+  "output_dir": "output",
+  "input_text1": "question",
+  "input_text2": "context",
+  "label_text": "answers",
+  "text_truncation": "only_second",
+  "trim_whitespace": true,
+  "tokenize_online": true,
+  "analyzer_netloc": "129.254.164.137:19001",
+  "loss_metric": "CrossEntropyLoss",
+  "score_metric": {
+    "major": "korquad"
+  },
+  "check_tokenizer": true,
+  "num_check_samples": 3,
+  "num_train_samples": -1,
+  "num_test_samples": -1,
+  "num_train_epochs": 3,
+  "scheduling_epochs": 1,
+  "scheduling_gamma": 1.0,
+  "learning_rate": 2e-5,
+  "log_targets": [
+    "name",
+    "seed",
+    "gpus",
+    "strategy",
+    "precision",
+    "test_batch_size",
+    "train_batch_size",
+    "max_sequence_length",
+    "pretrained",
+    "data_files",
+    "input_text1",
+    "input_text2",
+    "***************************",
+    "model",
+    "optimizer",
+    "scheduler",
+    "loss_metric",
+    "score_metric",
+    "***************************",
+    "total_steps",
+    "steps_per_epoch",
+    "num_train_epochs",
+    "scheduling_epochs",
+    "scheduling_gamma",
+    "learning_rate",
+    "***************************",
+    "records"
+  ],
+  "max_batch_size": {
+    "max_sequence_length=128": {
+      "precision=16": 144,
+      "precision=32": 96
+    },
+    "max_sequence_length=256": {
+      "precision=16": 72,
+      "precision=32": 48
+    },
+    "max_sequence_length=512": {
+      "precision=16": 36,
+      "precision=32": 24
+    }
+  }
+}

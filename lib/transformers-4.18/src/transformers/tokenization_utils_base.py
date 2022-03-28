@@ -293,7 +293,7 @@ class BatchEncoding(UserDict):
             raise ValueError("tokens() is not available when using Python-based tokenizers")
         return self._encodings[batch_index].tokens
 
-    def sequence_ids(self, batch_index: int = 0) -> List[Optional[int]]:
+    def sequence_ids(self, batch_index: int = 0, no_sequence_ids=None) -> List[Optional[int]]:
         """
         Return a list mapping the tokens to the id of their original sentences:
 
@@ -310,8 +310,13 @@ class BatchEncoding(UserDict):
             by the tokenizer are mapped to `None` and other tokens are mapped to the index of their corresponding
             sequence.
         """
-        if not self._encodings:
-            raise ValueError("sequence_ids() is not available when using Python-based tokenizers")
+        if not self._encodings:  ##rev##
+            if no_sequence_ids is None:
+                no_sequence_ids = {}
+            input_ids = self.data['input_ids'][batch_index]
+            token_type_ids = self.data['token_type_ids'][batch_index]
+            sequence_ids = [t if i not in no_sequence_ids else None for i, t in zip(input_ids, token_type_ids)]
+            return sequence_ids
         return self._encodings[batch_index].sequence_ids
 
     def words(self, batch_index: int = 0) -> List[Optional[int]]:
