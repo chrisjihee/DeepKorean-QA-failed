@@ -1,0 +1,207 @@
+{
+    "name": "GLUE-MRPC-train-full-0328.2041",
+    "seed": 1,
+    "gpus": [
+        0
+    ],
+    "strategy": null,
+    "precision": 32,
+    "test_batch_size": 96,
+    "train_batch_size": 96,
+    "max_sequence_length": 128,
+    "pretrained": "pretrained/BERT-Base-mul-unc",
+    "data_files": {
+        "train": {
+            "file": "data/glue-mrpc/train.json",
+            "rows": 3668
+        },
+        "valid": {
+            "file": "data/glue-mrpc/validation.json",
+            "rows": 408
+        },
+        "test": {
+            "file": "data/glue-mrpc/test.json",
+            "rows": 1725
+        }
+    },
+    "input_text1": "sentence1",
+    "input_text2": "sentence2",
+    "model": "MyModel(pretrained=BERT-Base-mul-unc)",
+    "optimizer": "Adam(lr=2e-05)",
+    "scheduler": "StepLR(step_size=1, gamma=1.0)",
+    "loss_metric": "CrossEntropyLoss()",
+    "score_metric": "load_metric(glue, mrpc)",
+    "total_steps": 195,
+    "steps_per_epoch": 39,
+    "num_train_epochs": 5,
+    "scheduling_epochs": 1,
+    "scheduling_gamma": 1.0,
+    "learning_rate": 2e-05,
+    "records": [
+        {
+            "step": 39,
+            "epoch": 1.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 23.697038,
+                    "loss": 0.6087301969528198,
+                    "accuracy": 0.6886586695747001,
+                    "f1": 0.7995084269662922
+                },
+                "train": {
+                    "runtime": 7.464797,
+                    "loss": 0.5392223596572876,
+                    "accuracy": 0.7748091603053435,
+                    "f1": 0.8418230563002682
+                },
+                "valid": {
+                    "runtime": 0.658669,
+                    "loss": 0.5440906882286072,
+                    "accuracy": 0.7622549019607843,
+                    "f1": 0.8391376451077944
+                },
+                "test": {
+                    "runtime": 3.250022,
+                    "loss": 0.5531615018844604,
+                    "accuracy": 0.7571014492753623,
+                    "f1": 0.8277846280312371
+                }
+            },
+            "model_path": "output/GLUE-MRPC-train-full-0328.2041/pytorch_model-01e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 78,
+            "epoch": 2.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 23.447789,
+                    "loss": 0.5360020995140076,
+                    "accuracy": 0.7709923664122137,
+                    "f1": 0.8387715930902111
+                },
+                "train": {
+                    "runtime": 7.540844,
+                    "loss": 0.48871415853500366,
+                    "accuracy": 0.8211559432933478,
+                    "f1": 0.8718249316139117
+                },
+                "valid": {
+                    "runtime": 0.661669,
+                    "loss": 0.5141376256942749,
+                    "accuracy": 0.7867647058823529,
+                    "f1": 0.8522920203735145
+                },
+                "test": {
+                    "runtime": 3.285198,
+                    "loss": 0.525824785232544,
+                    "accuracy": 0.7791304347826087,
+                    "f1": 0.8399832003359933
+                }
+            },
+            "model_path": "output/GLUE-MRPC-train-full-0328.2041/pytorch_model-02e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 117,
+            "epoch": 3.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 23.711428,
+                    "loss": 0.49154990911483765,
+                    "accuracy": 0.8206106870229007,
+                    "f1": 0.8715345568137447
+                },
+                "train": {
+                    "runtime": 7.628707,
+                    "loss": 0.46207281947135925,
+                    "accuracy": 0.8492366412213741,
+                    "f1": 0.8885305381979441
+                },
+                "valid": {
+                    "runtime": 0.688984,
+                    "loss": 0.4992760717868805,
+                    "accuracy": 0.8014705882352942,
+                    "f1": 0.8601036269430051
+                },
+                "test": {
+                    "runtime": 3.33296,
+                    "loss": 0.5229429602622986,
+                    "accuracy": 0.784927536231884,
+                    "f1": 0.8374945247481383
+                }
+            },
+            "model_path": "output/GLUE-MRPC-train-full-0328.2041/pytorch_model-03e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 156,
+            "epoch": 4.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 23.958315,
+                    "loss": 0.480997771024704,
+                    "accuracy": 0.8312431842966194,
+                    "f1": 0.8804788569221857
+                },
+                "train": {
+                    "runtime": 7.664447,
+                    "loss": 0.44931602478027344,
+                    "accuracy": 0.8650490730643402,
+                    "f1": 0.9059471784153524
+                },
+                "valid": {
+                    "runtime": 0.676072,
+                    "loss": 0.4962020814418793,
+                    "accuracy": 0.8014705882352942,
+                    "f1": 0.867862969004894
+                },
+                "test": {
+                    "runtime": 3.347951,
+                    "loss": 0.5145842432975769,
+                    "accuracy": 0.7959420289855073,
+                    "f1": 0.8603174603174604
+                }
+            },
+            "model_path": "output/GLUE-MRPC-train-full-0328.2041/pytorch_model-04e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 195,
+            "epoch": 5.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 24.147356,
+                    "loss": 0.45648330450057983,
+                    "accuracy": 0.854143947655398,
+                    "f1": 0.8937015696403736
+                },
+                "train": {
+                    "runtime": 7.739568,
+                    "loss": 0.42419111728668213,
+                    "accuracy": 0.8895856052344602,
+                    "f1": 0.9217391304347826
+                },
+                "valid": {
+                    "runtime": 0.679718,
+                    "loss": 0.4962787628173828,
+                    "accuracy": 0.7965686274509803,
+                    "f1": 0.8632619439868204
+                },
+                "test": {
+                    "runtime": 3.366412,
+                    "loss": 0.5018675327301025,
+                    "accuracy": 0.8052173913043478,
+                    "f1": 0.8647342995169082
+                }
+            },
+            "model_path": "output/GLUE-MRPC-train-full-0328.2041/pytorch_model-05e",
+            "learning_rate": 2e-05
+        }
+    ]
+}

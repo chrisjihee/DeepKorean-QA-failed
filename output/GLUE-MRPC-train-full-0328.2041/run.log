@@ -1,0 +1,139 @@
+/home/chris/miniconda3/envs/DeepKorean/bin/python /dat/proj/DeepKorean/src/train.py --config conf/GLUE-MRPC-train-full.json
+Global seed set to 1
+================================================================================================================================================================================================================================================================
+[2022/03/28 20:41:30] [INIT] train (GLUE-MRPC-train-full-0328.2041)
+================================================================================================================================================================================================================================================================
+- state.name                = (str) GLUE-MRPC-train-full-0328.2041
+- state.seed                = (int) 1
+- state.gpus                = (list) [0]
+- state.strategy            = (NoneType) None
+- state.precision           = (int) 32
+- state.test_batch_size     = (int) -1
+- state.train_batch_size    = (int) -1
+- state.max_sequence_length = (int) 128
+- state.pretrained          = (str) pretrained/BERT-Base-mul-unc
+- state.data_files          = (dict) {'train': 'data/glue-mrpc/train.json', 'valid': 'data/glue-mrpc/validation.json', 'test': 'data/glue-mrpc/test.json'}
+- state.input_text1         = (str) sentence1
+- state.input_text2         = (str) sentence2
+- state.loss_metric         = (str) CrossEntropyLoss
+- state.score_metric        = (dict) {'major': 'glue', 'minor': 'mrpc'}
+- state.num_train_epochs    = (int) 5
+- state.scheduling_epochs   = (int) 1
+- state.scheduling_gamma    = (float) 1.0
+- state.learning_rate       = (float) 2e-05
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+- pretrained_tokenizer      = BertTokenizerFast / is_fast=True / vocab_size=105879 / model_input_names=input_ids, token_type_ids, attention_mask / model_max_length=128 / padding_side=right / special_tokens=[UNK], [SEP], [PAD], [CLS], [MASK]
+- tokenized.sample.plain    = [CLS] 한국어 사전학습 모델을 공유합니다. [SEP]
+- tokenized.sample.morps    = [CLS] 한국어/NNP 사전/NNG 학습/NNG 모델/NNG 을/JKO 공유/NNG 하/XSV ㅂ니다/EF ./SF [SEP]
+- tokenized.sample.tks      = [CLS] 한국 ##어 ᄉ ##ᅡ ##전 ##학 ##스 ##ᆸ ᄆ ##ᅩ ##데 ##ᆯ을 고 ##ᆼ ##유 ##합 ##니다 . [SEP]
+- tokenized.sample.ids      = 101 47529 13413 1172 25539 17101 21596 13212 17360 1169 29347 26872 22058 47468 13045 42159 44859 82566 119 102
+- tokenized.examples[0].tks = [CLS] am ##roz ##i accused his brother , whom he called " the witness " , of deli ##bera ##tely dis ##tor ##ting his evidence . [SEP] referring to him ... [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+- tokenized.examples[0].ids = 101 10345 59474 10116 35579 10235 14697 117 18218 10191 11723 107 10103 47548 107 117 10108 27254 47471 41699 23145 12127 12305 10235 16826 119 102 62886 10114 11060 ... 0 0 0 0 0 0 0 0 0 0
+- tokenized.examples[1].tks = [CLS] yu ##ca ##ip ##a owned dominic ##k ' s before selling the chain to safe ##way in 1998 for $ 2 . 5 billion . [SEP] yu ##ca ##ip ... [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+- tokenized.examples[1].ids = 101 16566 10402 25113 10112 17259 48562 10167 112 161 11364 27885 10103 25183 10114 31813 15437 10104 10394 10139 109 123 119 126 24382 119 102 16566 10402 25113 ... 0 0 0 0 0 0 0 0 0 0
+- tokenized.examples[2].tks = [CLS] they had published an ad ##vert ##ise ##ment on the internet on june 10 , offering the cargo for sale , he added . [SEP] on june 10 , ... [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+- tokenized.examples[2].ids = 101 10578 10407 12414 10144 10816 28032 12650 10503 10125 10103 12044 10125 11332 10148 117 39646 10103 15524 10139 14773 117 10191 16526 119 102 10125 11332 10148 117 ... 0 0 0 0 0 0 0 0 0 0
+- state.train_batch_size    = (int) 96
+- state.test_batch_size     = (int) 96
+- raw_datasets[train]       =   3,668 samples / label[int64], input_ids[list], token_type_ids[list], attention_mask[list]
+- raw_datasets[valid]       =     408 samples / label[int64], input_ids[list], token_type_ids[list], attention_mask[list]
+- raw_datasets[test]        =   1,725 samples / label[int64], input_ids[list], token_type_ids[list], attention_mask[list]
+- input_text_columns        = sentence1, sentence2
+- label_column              = label
+Some weights of the model checkpoint at pretrained/BERT-Base-mul-unc were not used when initializing BertModel: ['cls.predictions.transform.LayerNorm.bias', 'cls.seq_relationship.weight', 'cls.predictions.decoder.weight', 'cls.predictions.bias', 'cls.predictions.transform.dense.weight', 'cls.predictions.transform.dense.bias', 'cls.seq_relationship.bias', 'cls.predictions.transform.LayerNorm.weight']
+- This IS expected if you are initializing BertModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing BertModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+- pretrained_model          = BertModel(
+  (embeddings): BertEmbeddings(
+    (word_embeddings): Embedding(105879, 768, padding_idx=0)
+    (position_embeddings): Embedding(512, 768)
+    (token_type_embeddings): Embedding(2, 768)
+    (LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+    (dropout): Dropout(p=0.1, inplace=False)
+  )
+  ...
+  (pooler): BertPooler(
+    (dense): Linear(in_features=768, out_features=768, bias=True)
+    (activation): Tanh()
+  )
+)
+- encoded.input_ids         = (2x128) / 101 47529 13413 1172 25539 17101 21596 13212 17360 1169 29347 26872 22058 47468 13045 42159 44859 82566 119 102 0 0 0 0 0 ... 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+- encoded.attention_mask    = (2x128) / 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 ... 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+- encoded.token_type_ids    = (2x128) / 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+- forwarded.hidden_output   = (2x128x768) / tensor([[-0.0510, -0.1183, -0.0165,  ...,  0.0060, -0.0585, -0.1084],
+        [ 0.3172,  0.0977, -0.1539,  ...,  0.0561,  0.4085, -0.9275],
+        [ 0.2552, -0.2561, -0.2972,  ..., -0.2263,  0.8786, -0.2729],
+        ...,
+        [ 0.0565, -0.0844, -0.0249,  ..., -0.2546,  0.3479, -0.2610],
+        [ 0.2467, -0.2577,  0.3330,  ...,  0.0905,  0.2164,  0.1767],
+        [ 0.1810, -0.0716, -0.0309,  ...,  0.2375, -0.2798, -0.0863]],
+       grad_fn=<SelectBackward0>)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+- model                     = MyModel(pretrained=BERT-Base-mul-unc)
+- optimizer                 = Adam(lr=2e-05)
+- scheduler                 = StepLR(step_size=1, gamma=1.0)
+- loss_metric               = CrossEntropyLoss()
+- score_metric              = load_metric(glue, mrpc)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+================================================================================================================================================================================================================================================================
+[2022/03/28 20:41:46] (Epoch 01) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:41:50] (Epoch 01) training #1: 100%|██████████████████████████████| 39/39 [00:23<00:00,  1.65it/s]
+[2022/03/28 20:42:17] (Epoch 01) metering #1: 100%|██████████████████████████████| 39/39 [00:07<00:00,  5.23it/s]
+[2022/03/28 20:42:26] (Epoch 01) metering #1: 100%|██████████████████████████████| 5/5 [00:00<00:00,  7.60it/s]
+[2022/03/28 20:42:28] (Epoch 01) metering #1: 100%|██████████████████████████████| 18/18 [00:03<00:00,  5.54it/s]
+[2022/03/28 20:42:36] (Epoch 01) measured #1: step  | loss=0.6087, accuracy=0.6887, f1=0.7995, runtime=23.6970
+[2022/03/28 20:42:36] (Epoch 01) measured #1: train | loss=0.5392, accuracy=0.7748, f1=0.8418, runtime=7.4648
+[2022/03/28 20:42:36] (Epoch 01) measured #1: valid | loss=0.5441, accuracy=0.7623, f1=0.8391, runtime=0.6587
+[2022/03/28 20:42:36] (Epoch 01) measured #1: test  | loss=0.5532, accuracy=0.7571, f1=0.8278, runtime=3.2500
+[2022/03/28 20:42:38] (Epoch 01) exported #1: model | output/GLUE-MRPC-train-full-0328.2041/pytorch_model-01e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:42:41] (Epoch 02) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:42:45] (Epoch 02) training #1: 100%|██████████████████████████████| 39/39 [00:23<00:00,  1.66it/s]
+[2022/03/28 20:43:13] (Epoch 02) metering #1: 100%|██████████████████████████████| 39/39 [00:07<00:00,  5.18it/s]
+[2022/03/28 20:43:21] (Epoch 02) metering #1: 100%|██████████████████████████████| 5/5 [00:00<00:00,  7.57it/s]
+[2022/03/28 20:43:23] (Epoch 02) metering #1: 100%|██████████████████████████████| 18/18 [00:03<00:00,  5.48it/s]
+[2022/03/28 20:43:32] (Epoch 02) measured #1: step  | loss=0.5360, accuracy=0.7710, f1=0.8388, runtime=23.4478
+[2022/03/28 20:43:32] (Epoch 02) measured #1: train | loss=0.4887, accuracy=0.8212, f1=0.8718, runtime=7.5408
+[2022/03/28 20:43:32] (Epoch 02) measured #1: valid | loss=0.5141, accuracy=0.7868, f1=0.8523, runtime=0.6617
+[2022/03/28 20:43:32] (Epoch 02) measured #1: test  | loss=0.5258, accuracy=0.7791, f1=0.8400, runtime=3.2852
+[2022/03/28 20:43:34] (Epoch 02) exported #1: model | output/GLUE-MRPC-train-full-0328.2041/pytorch_model-02e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:43:37] (Epoch 03) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:43:41] (Epoch 03) training #1: 100%|██████████████████████████████| 39/39 [00:23<00:00,  1.64it/s]
+[2022/03/28 20:44:09] (Epoch 03) metering #1: 100%|██████████████████████████████| 39/39 [00:07<00:00,  5.12it/s]
+[2022/03/28 20:44:17] (Epoch 03) metering #1: 100%|██████████████████████████████| 5/5 [00:00<00:00,  7.27it/s]
+[2022/03/28 20:44:19] (Epoch 03) metering #1: 100%|██████████████████████████████| 18/18 [00:03<00:00,  5.40it/s]
+[2022/03/28 20:44:28] (Epoch 03) measured #1: step  | loss=0.4915, accuracy=0.8206, f1=0.8715, runtime=23.7114
+[2022/03/28 20:44:28] (Epoch 03) measured #1: train | loss=0.4621, accuracy=0.8492, f1=0.8885, runtime=7.6287
+[2022/03/28 20:44:28] (Epoch 03) measured #1: valid | loss=0.4993, accuracy=0.8015, f1=0.8601, runtime=0.6890
+[2022/03/28 20:44:28] (Epoch 03) measured #1: test  | loss=0.5229, accuracy=0.7849, f1=0.8375, runtime=3.3330
+[2022/03/28 20:44:30] (Epoch 03) exported #1: model | output/GLUE-MRPC-train-full-0328.2041/pytorch_model-03e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:44:33] (Epoch 04) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:44:37] (Epoch 04) training #1: 100%|██████████████████████████████| 39/39 [00:23<00:00,  1.63it/s]
+[2022/03/28 20:45:05] (Epoch 04) metering #1: 100%|██████████████████████████████| 39/39 [00:07<00:00,  5.09it/s]
+[2022/03/28 20:45:14] (Epoch 04) metering #1: 100%|██████████████████████████████| 5/5 [00:00<00:00,  7.41it/s]
+[2022/03/28 20:45:16] (Epoch 04) metering #1: 100%|██████████████████████████████| 18/18 [00:03<00:00,  5.38it/s]
+[2022/03/28 20:45:24] (Epoch 04) measured #1: step  | loss=0.4810, accuracy=0.8312, f1=0.8805, runtime=23.9583
+[2022/03/28 20:45:24] (Epoch 04) measured #1: train | loss=0.4493, accuracy=0.8650, f1=0.9059, runtime=7.6644
+[2022/03/28 20:45:24] (Epoch 04) measured #1: valid | loss=0.4962, accuracy=0.8015, f1=0.8679, runtime=0.6761
+[2022/03/28 20:45:24] (Epoch 04) measured #1: test  | loss=0.5146, accuracy=0.7959, f1=0.8603, runtime=3.3480
+[2022/03/28 20:45:26] (Epoch 04) exported #1: model | output/GLUE-MRPC-train-full-0328.2041/pytorch_model-04e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:45:29] (Epoch 05) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:45:34] (Epoch 05) training #1: 100%|██████████████████████████████| 39/39 [00:24<00:00,  1.62it/s]
+[2022/03/28 20:46:02] (Epoch 05) metering #1: 100%|██████████████████████████████| 39/39 [00:07<00:00,  5.05it/s]
+[2022/03/28 20:46:10] (Epoch 05) metering #1: 100%|██████████████████████████████| 5/5 [00:00<00:00,  7.37it/s]
+[2022/03/28 20:46:12] (Epoch 05) metering #1: 100%|██████████████████████████████| 18/18 [00:03<00:00,  5.35it/s]
+[2022/03/28 20:46:21] (Epoch 05) measured #1: step  | loss=0.4565, accuracy=0.8541, f1=0.8937, runtime=24.1474
+[2022/03/28 20:46:21] (Epoch 05) measured #1: train | loss=0.4242, accuracy=0.8896, f1=0.9217, runtime=7.7396
+[2022/03/28 20:46:21] (Epoch 05) measured #1: valid | loss=0.4963, accuracy=0.7966, f1=0.8633, runtime=0.6797
+[2022/03/28 20:46:21] (Epoch 05) measured #1: test  | loss=0.5019, accuracy=0.8052, f1=0.8647, runtime=3.3664
+[2022/03/28 20:46:23] (Epoch 05) exported #1: model | output/GLUE-MRPC-train-full-0328.2041/pytorch_model-05e
+================================================================================================================================================================================================================================================================
+[2022/03/28 20:46:26] [EXIT] train (GLUE-MRPC-train-full-0328.2041) ($=00:04:55.786)
+================================================================================================================================================================================================================================================================
+
+Process finished with exit code 0

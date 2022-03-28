@@ -1,0 +1,83 @@
+{
+  "seed": 1,
+  "gpus": [
+    0
+  ],
+  "strategy": null,
+  "precision": 32,
+  "test_batch_size": -1,
+  "train_batch_size": -1,
+  "max_sequence_length": 128,
+  "pretrained": "pretrained/BERT-Base-mul-unc",
+  "data_files": {
+    "train": "data/glue-mrpc/train.json",
+    "valid": "data/glue-mrpc/validation.json",
+    "test": "data/glue-mrpc/test.json"
+  },
+  "num_classes": 2,
+  "label_column": "label",
+  "score_targets": {
+    "train": true,
+    "valid": true,
+    "test": true
+  },
+  "output_dir": "output",
+  "input_text1": "sentence1",
+  "input_text2": "sentence2",
+  "loss_metric": "CrossEntropyLoss",
+  "score_metric": {
+    "major": "glue",
+    "minor": "mrpc"
+  },
+  "check_tokenizer": true,
+  "num_check_samples": 3,
+  "num_train_samples": -1,
+  "num_test_samples": -1,
+  "num_train_epochs": 5,
+  "scheduling_epochs": 1,
+  "scheduling_gamma": 1.0,
+  "learning_rate": 2e-5,
+  "log_targets": [
+    "name",
+    "seed",
+    "gpus",
+    "strategy",
+    "precision",
+    "test_batch_size",
+    "train_batch_size",
+    "max_sequence_length",
+    "pretrained",
+    "data_files",
+    "input_text1",
+    "input_text2",
+    "***************************",
+    "model",
+    "optimizer",
+    "scheduler",
+    "loss_metric",
+    "score_metric",
+    "***************************",
+    "total_steps",
+    "steps_per_epoch",
+    "num_train_epochs",
+    "scheduling_epochs",
+    "scheduling_gamma",
+    "learning_rate",
+    "***************************",
+    "records"
+  ],
+  "max_batch_size": {
+    "max_sequence_length=128": {
+      "precision=16": 144,
+      "precision=32": 96
+    },
+    "max_sequence_length=256": {
+      "precision=16": 72,
+      "precision=32": 48
+    },
+    "max_sequence_length=512": {
+      "precision=16": 36,
+      "precision=32": 24
+    }
+  }
+}

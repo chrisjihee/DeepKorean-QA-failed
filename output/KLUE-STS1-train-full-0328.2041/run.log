@@ -1,0 +1,124 @@
+/home/chris/miniconda3/envs/DeepKorean/bin/python /dat/proj/DeepKorean/src/train.py --config conf/KLUE-STS1-train-full.json
+Global seed set to 1
+================================================================================================================================================================================================================================================================
+[2022/03/28 20:41:49] [INIT] train (KLUE-STS1-train-full-0328.2041)
+================================================================================================================================================================================================================================================================
+- state.name                = (str) KLUE-STS1-train-full-0328.2041
+- state.seed                = (int) 1
+- state.gpus                = (list) [2]
+- state.strategy            = (NoneType) None
+- state.precision           = (int) 32
+- state.test_batch_size     = (int) -1
+- state.train_batch_size    = (int) -1
+- state.max_sequence_length = (int) 128
+- state.pretrained          = (str) pretrained/KoELECTRA-Base-v3
+- state.data_files          = (dict) {'train': 'data/klue-sts/train.json', 'valid': 'data/klue-sts/validation.json', 'test': None}
+- state.input_text1         = (str) sentence1
+- state.input_text2         = (str) sentence2
+- state.loss_metric         = (str) MSELoss
+- state.score_metric        = (dict) {'major': 'glue', 'minor': 'stsb'}
+- state.num_train_epochs    = (int) 5
+- state.scheduling_epochs   = (int) 1
+- state.scheduling_gamma    = (float) 1.0
+- state.learning_rate       = (float) 2e-05
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+- pretrained_tokenizer      = ElectraTokenizerFast / is_fast=True / vocab_size=35000 / model_input_names=input_ids, token_type_ids, attention_mask / model_max_length=512 / padding_side=right / special_tokens=[UNK], [SEP], [PAD], [CLS], [MASK]
+- tokenized.sample.plain    = [CLS] 한국어 사전학습 모델을 공유합니다. [SEP]
+- tokenized.sample.morps    = [CLS] 한국어/NNP 사전/NNG 학습/NNG 모델/NNG 을/JKO 공유/NNG 하/XSV ㅂ니다/EF ./SF [SEP]
+- tokenized.sample.tks      = [CLS] 한국어 사전 ##학습 모델 ##을 공유 ##합니다 . [SEP]
+- tokenized.sample.ids      = 2 11229 7485 26694 6918 4292 7824 17788 18 3
+- tokenized.examples[0].tks = [CLS] 숙소 위치 ##는 찾기 쉽 ##고 일반 ##적 ##인 한국 ##의 반지 ##하 숙소 ##입니다 . [SEP] 숙박 ##시설 ##의 위치 ##는 쉽 ##게 찾 ##을 수 있 ##고 ... [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+- tokenized.examples[0].ids = 2 12175 6767 4034 23689 2990 4219 6517 4199 4139 6244 4234 13163 4279 12175 10561 18 3 11311 14398 4234 6767 4034 2990 4325 3430 4292 2967 3249 4219 ... 0 0 0 0 0 0 0 0 0 0
+- tokenized.examples[1].tks = [CLS] 위반 ##행위 조사 등 ##을 거부 · 방해 · 기피 ##한 자는 500 ##만 ##원 이하 과태료 부과 대상 ##이다 . [SEP] 시민 ##들 스스로 자발 ##적 ##인 예방 ... [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+- tokenized.examples[1].ids = 2 7670 12499 6317 2446 4292 7270 107 8656 107 14671 4283 7955 7217 4172 4005 7700 14003 8742 6391 24387 18 3 6539 4006 6926 10989 4199 4139 7724 ... 0 0 0 0 0 0 0 0 0 0
+- tokenized.examples[2].tks = [CLS] 회사 ##가 보낸 메일 ##은 이 지 ##메 ##일이 아니 ##라 다른 지 ##메 ##일 계정 ##으로 전달 ##해 ##줘 . [SEP] 사람 ##들이 주로 네이버 메일 ##을 쓰 ... [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+- tokenized.examples[2].ids = 2 6387 4070 8444 11121 4112 3240 3348 4503 12916 6231 4118 6254 3348 4503 4366 10592 10749 7246 4151 5070 18 3 6226 10728 7262 9338 11121 4292 3063 ... 0 0 0 0 0 0 0 0 0 0
+- state.train_batch_size    = (int) 96
+- state.test_batch_size     = (int) 96
+- raw_datasets[train]       =  11,668 samples / labels.binary-label[int64], labels.label[float64], labels.real-label[float64], input_ids[list], token_type_ids[list], attention_mask[list]
+- raw_datasets[valid]       =     519 samples / labels.binary-label[int64], labels.label[float64], labels.real-label[float64], input_ids[list], token_type_ids[list], attention_mask[list]
+- input_text_columns        = sentence1, sentence2
+- label_column              = labels.label
+Some weights of the model checkpoint at pretrained/KoELECTRA-Base-v3 were not used when initializing ElectraModel: ['discriminator_predictions.dense.bias', 'discriminator_predictions.dense_prediction.bias', 'discriminator_predictions.dense_prediction.weight', 'discriminator_predictions.dense.weight']
+- This IS expected if you are initializing ElectraModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing ElectraModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+- pretrained_model          = ElectraModel(
+  (embeddings): ElectraEmbeddings(
+    (word_embeddings): Embedding(35000, 768, padding_idx=0)
+    (position_embeddings): Embedding(512, 768)
+    (token_type_embeddings): Embedding(2, 768)
+    (LayerNorm): LayerNorm((768,), eps=1e-12, elementwise_affine=True)
+    (dropout): Dropout(p=0.1, inplace=False)
+  )
+  ...
+)
+- encoded.input_ids         = (2x128) / 2 11229 7485 26694 6918 4292 7824 17788 18 3 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+- encoded.attention_mask    = (2x128) / 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+- encoded.token_type_ids    = (2x128) / 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 ... 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+- forwarded.hidden_output   = (2x128x768) / tensor([[ 0.0427, -0.5928, -0.3165,  ..., -0.1792, -0.4459, -0.3938],
+        [ 0.7741,  0.0279, -0.5623,  ...,  0.1221,  0.2013, -0.2910],
+        [ 0.4709,  0.1436, -0.6242,  ..., -0.2247,  0.0324, -0.5515],
+        ...,
+        [-0.1399, -0.8091, -0.3930,  ..., -0.0888,  0.1885,  0.1949],
+        [-0.0847, -0.8097, -0.3981,  ..., -0.0847,  0.2135,  0.2072],
+        [-0.1075, -0.7805, -0.3686,  ..., -0.1296,  0.2392,  0.1806]],
+       grad_fn=<SelectBackward0>)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+- model                     = MyModel(pretrained=KoELECTRA-Base-v3)
+- optimizer                 = Adam(lr=2e-05)
+- scheduler                 = StepLR(step_size=1, gamma=1.0)
+- loss_metric               = MSELoss()
+- score_metric              = load_metric(glue, stsb)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+================================================================================================================================================================================================================================================================
+[2022/03/28 20:42:06] (Epoch 01) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:42:10] (Epoch 01) training #1: 100%|██████████████████████████████| 122/122 [01:14<00:00,  1.64it/s]
+[2022/03/28 20:43:28] (Epoch 01) metering #1: 100%|██████████████████████████████| 122/122 [00:24<00:00,  4.99it/s]
+[2022/03/28 20:43:54] (Epoch 01) metering #1: 100%|██████████████████████████████| 6/6 [00:00<00:00,  6.92it/s]
+[2022/03/28 20:44:00] (Epoch 01) measured #1: step  | loss=1.7841, pearson=0.6983, spearmanr=0.6536, runtime=74.4724
+[2022/03/28 20:44:00] (Epoch 01) measured #1: train | loss=0.2425, pearson=0.9694, spearmanr=0.9241, runtime=24.4932
+[2022/03/28 20:44:00] (Epoch 01) measured #1: valid | loss=0.6627, pearson=0.8715, spearmanr=0.8799, runtime=0.8686
+[2022/03/28 20:44:02] (Epoch 01) exported #1: model | output/KLUE-STS1-train-full-0328.2041/pytorch_model-01e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:44:05] (Epoch 02) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:44:09] (Epoch 02) training #1: 100%|██████████████████████████████| 122/122 [01:15<00:00,  1.61it/s]
+[2022/03/28 20:45:29] (Epoch 02) metering #1: 100%|██████████████████████████████| 122/122 [00:24<00:00,  4.88it/s]
+[2022/03/28 20:45:55] (Epoch 02) metering #1: 100%|██████████████████████████████| 6/6 [00:00<00:00,  6.82it/s]
+[2022/03/28 20:46:01] (Epoch 02) measured #1: step  | loss=0.1887, pearson=0.9688, spearmanr=0.9090, runtime=76.0003
+[2022/03/28 20:46:01] (Epoch 02) measured #1: train | loss=0.2814, pearson=0.9766, spearmanr=0.9367, runtime=25.0252
+[2022/03/28 20:46:01] (Epoch 02) measured #1: valid | loss=0.7202, pearson=0.8870, spearmanr=0.9002, runtime=0.8802
+[2022/03/28 20:46:03] (Epoch 02) exported #1: model | output/KLUE-STS1-train-full-0328.2041/pytorch_model-02e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:46:06] (Epoch 03) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:46:10] (Epoch 03) training #1: 100%|██████████████████████████████| 122/122 [01:17<00:00,  1.58it/s]
+[2022/03/28 20:47:31] (Epoch 03) metering #1: 100%|██████████████████████████████| 122/122 [00:25<00:00,  4.81it/s]
+[2022/03/28 20:47:57] (Epoch 03) metering #1: 100%|██████████████████████████████| 6/6 [00:00<00:00,  6.70it/s]
+[2022/03/28 20:48:03] (Epoch 03) measured #1: step  | loss=0.1468, pearson=0.9758, spearmanr=0.9255, runtime=77.1559
+[2022/03/28 20:48:03] (Epoch 03) measured #1: train | loss=0.2554, pearson=0.9823, spearmanr=0.9473, runtime=25.3793
+[2022/03/28 20:48:03] (Epoch 03) measured #1: valid | loss=0.6243, pearson=0.9034, spearmanr=0.9120, runtime=0.8975
+[2022/03/28 20:48:05] (Epoch 03) exported #1: model | output/KLUE-STS1-train-full-0328.2041/pytorch_model-03e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:48:08] (Epoch 04) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:48:12] (Epoch 04) training #1: 100%|██████████████████████████████| 122/122 [01:18<00:00,  1.55it/s]
+[2022/03/28 20:49:35] (Epoch 04) metering #1: 100%|██████████████████████████████| 122/122 [00:25<00:00,  4.72it/s]
+[2022/03/28 20:50:02] (Epoch 04) metering #1: 100%|██████████████████████████████| 6/6 [00:00<00:00,  6.55it/s]
+[2022/03/28 20:50:08] (Epoch 04) measured #1: step  | loss=0.1222, pearson=0.9799, spearmanr=0.9346, runtime=78.5957
+[2022/03/28 20:50:08] (Epoch 04) measured #1: train | loss=0.1992, pearson=0.9856, spearmanr=0.9549, runtime=25.8433
+[2022/03/28 20:50:08] (Epoch 04) measured #1: valid | loss=0.5364, pearson=0.9098, spearmanr=0.9146, runtime=0.9178
+[2022/03/28 20:50:10] (Epoch 04) exported #1: model | output/KLUE-STS1-train-full-0328.2041/pytorch_model-04e
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+[2022/03/28 20:50:13] (Epoch 05) composed #1: learning_rate=0.0000200000
+[2022/03/28 20:50:17] (Epoch 05) training #1: 100%|██████████████████████████████| 122/122 [01:19<00:00,  1.54it/s]
+[2022/03/28 20:51:40] (Epoch 05) metering #1: 100%|██████████████████████████████| 122/122 [00:26<00:00,  4.68it/s]
+[2022/03/28 20:52:07] (Epoch 05) metering #1: 100%|██████████████████████████████| 6/6 [00:00<00:00,  6.54it/s]
+[2022/03/28 20:52:13] (Epoch 05) measured #1: step  | loss=0.1177, pearson=0.9806, spearmanr=0.9380, runtime=79.2564
+[2022/03/28 20:52:13] (Epoch 05) measured #1: train | loss=0.1075, pearson=0.9860, spearmanr=0.9606, runtime=26.0986
+[2022/03/28 20:52:13] (Epoch 05) measured #1: valid | loss=0.3430, pearson=0.9207, spearmanr=0.9134, runtime=0.9184
+[2022/03/28 20:52:15] (Epoch 05) exported #1: model | output/KLUE-STS1-train-full-0328.2041/pytorch_model-05e
+================================================================================================================================================================================================================================================================
+[2022/03/28 20:52:18] [EXIT] train (KLUE-STS1-train-full-0328.2041) ($=00:10:29.160)
+================================================================================================================================================================================================================================================================
+
+Process finished with exit code 0

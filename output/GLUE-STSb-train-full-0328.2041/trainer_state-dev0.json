@@ -1,0 +1,174 @@
+{
+    "name": "GLUE-STSb-train-full-0328.2041",
+    "seed": 1,
+    "gpus": [
+        1
+    ],
+    "strategy": null,
+    "precision": 32,
+    "test_batch_size": 96,
+    "train_batch_size": 96,
+    "max_sequence_length": 128,
+    "pretrained": "pretrained/BERT-Base-mul-unc",
+    "data_files": {
+        "train": {
+            "file": "data/glue-stsb/train.json",
+            "rows": 5749
+        },
+        "valid": {
+            "file": "data/glue-stsb/validation.json",
+            "rows": 1500
+        },
+        "test": null
+    },
+    "input_text1": "sentence1",
+    "input_text2": "sentence2",
+    "model": "MyModel(pretrained=BERT-Base-mul-unc)",
+    "optimizer": "Adam(lr=2e-05)",
+    "scheduler": "StepLR(step_size=1, gamma=1.0)",
+    "loss_metric": "MSELoss()",
+    "score_metric": "load_metric(glue, stsb)",
+    "total_steps": 300,
+    "steps_per_epoch": 60,
+    "num_train_epochs": 5,
+    "scheduling_epochs": 1,
+    "scheduling_gamma": 1.0,
+    "learning_rate": 2e-05,
+    "records": [
+        {
+            "step": 60,
+            "epoch": 1.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 36.287561,
+                    "loss": 2.0360164642333984,
+                    "pearson": 0.4272577588575967,
+                    "spearmanr": 0.4542843121399319
+                },
+                "train": {
+                    "runtime": 11.545329,
+                    "loss": 0.8605285882949829,
+                    "pearson": 0.793113812653139,
+                    "spearmanr": 0.7862297766808234
+                },
+                "valid": {
+                    "runtime": 2.827988,
+                    "loss": 0.9775782823562622,
+                    "pearson": 0.7903076415948249,
+                    "spearmanr": 0.8159839004721715
+                }
+            },
+            "model_path": "output/GLUE-STSb-train-full-0328.2041/pytorch_model-01e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 120,
+            "epoch": 2.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 36.50272,
+                    "loss": 0.7142411470413208,
+                    "pearson": 0.8169155071308655,
+                    "spearmanr": 0.7849709074045842
+                },
+                "train": {
+                    "runtime": 11.724574,
+                    "loss": 0.6101516485214233,
+                    "pearson": 0.8661801323589788,
+                    "spearmanr": 0.8555307218219667
+                },
+                "valid": {
+                    "runtime": 2.868379,
+                    "loss": 0.7628856301307678,
+                    "pearson": 0.8359034906732656,
+                    "spearmanr": 0.8382149068974684
+                }
+            },
+            "model_path": "output/GLUE-STSb-train-full-0328.2041/pytorch_model-02e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 180,
+            "epoch": 3.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 36.559307,
+                    "loss": 0.5588079690933228,
+                    "pearson": 0.8601030657811232,
+                    "spearmanr": 0.8315609437025042
+                },
+                "train": {
+                    "runtime": 11.796945,
+                    "loss": 0.5652225017547607,
+                    "pearson": 0.8956561559162877,
+                    "spearmanr": 0.8845530684652604
+                },
+                "valid": {
+                    "runtime": 2.892587,
+                    "loss": 0.6897404193878174,
+                    "pearson": 0.8581426895882606,
+                    "spearmanr": 0.8589460012569645
+                }
+            },
+            "model_path": "output/GLUE-STSb-train-full-0328.2041/pytorch_model-03e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 240,
+            "epoch": 4.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 36.757159,
+                    "loss": 0.48309072852134705,
+                    "pearson": 0.8802683704356937,
+                    "spearmanr": 0.8538986293730211
+                },
+                "train": {
+                    "runtime": 11.877453,
+                    "loss": 0.40583887696266174,
+                    "pearson": 0.9267988729626269,
+                    "spearmanr": 0.916698288311114
+                },
+                "valid": {
+                    "runtime": 2.910333,
+                    "loss": 0.609178364276886,
+                    "pearson": 0.8745527391136356,
+                    "spearmanr": 0.8738481770082958
+                }
+            },
+            "model_path": "output/GLUE-STSb-train-full-0328.2041/pytorch_model-04e",
+            "learning_rate": 2e-05
+        },
+        {
+            "step": 300,
+            "epoch": 5.0,
+            "device": 0,
+            "metrics": {
+                "step": {
+                    "runtime": 36.592961,
+                    "loss": 0.3595016598701477,
+                    "pearson": 0.9122675707987902,
+                    "spearmanr": 0.8911283393243876
+                },
+                "train": {
+                    "runtime": 11.913638,
+                    "loss": 0.2726387083530426,
+                    "pearson": 0.9424811248125627,
+                    "spearmanr": 0.9344470782011276
+                },
+                "valid": {
+                    "runtime": 2.913158,
+                    "loss": 0.5849322080612183,
+                    "pearson": 0.8707799725766112,
+                    "spearmanr": 0.8694297077708197
+                }
+            },
+            "model_path": "output/GLUE-STSb-train-full-0328.2041/pytorch_model-05e",
+            "learning_rate": 2e-05
+        }
+    ]
+}
